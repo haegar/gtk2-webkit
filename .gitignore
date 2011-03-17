@@ -15,3 +15,7 @@ Debian*
 .*
 !.gitignore
 *~
+debian/files
+debian/libgtk2-webkit-perl.debhelper.log
+debian/libgtk2-webkit-perl.substvars
+debian/libgtk2-webkit-perl/
