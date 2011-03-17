@@ -2,3 +2,6 @@
 
 %:
 	dh $@
+
+override_dh_auto_test:
+	echo "tests disabled, they need X11 and $DISPLAY"
