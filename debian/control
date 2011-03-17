@@ -1,7 +1,7 @@
 Source: libgtk2-webkit-perl
 Section: perl
 Priority: optional
-Build-Depends: debhelper (>= 7),
+Build-Depends: debhelper (>= 7.0.50~),
  perl, libwebkitgtk-dev,
  libmodule-install-perl, libextutils-depends-perl, libextutils-pkgconfig-perl
 Maintainer: Sven-Haegar Koch <haegar@sdinet.de>
