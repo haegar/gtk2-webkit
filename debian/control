@@ -2,8 +2,9 @@ Source: libgtk2-webkit-perl
 Section: perl
 Priority: optional
 Build-Depends: debhelper (>= 7.0.50~),
- perl, libwebkitgtk-dev,
- libmodule-install-perl, libextutils-depends-perl, libextutils-pkgconfig-perl
+ perl, libwebkit-dev,
+ libmodule-install-perl, libextutils-depends-perl, libextutils-pkgconfig-perl,
+ libgtk2-perl
 Maintainer: Sven-Haegar Koch <haegar@sdinet.de>
 Standards-Version: 3.9.1
 Homepage: http://search.cpan.org/dist/Gtk2-WebKit/

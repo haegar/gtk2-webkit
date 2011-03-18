@@ -1,3 +1,10 @@
+libgtk2-webkit-perl (0.08+git20100606-0.sdinetF2) unstable; urgency=low
+
+  * Replaced Build-Depends libwebkitgtk-dev with libwebkit-dev
+  * Added Build-Depends on libgtk2-perl
+
+ -- Sven-Haegar Koch <haegar@sdinet.de>  Fri, 18 Mar 2011 17:43:44 +0100
+
 libgtk2-webkit-perl (0.08+git20100606-0.sdinetF1) unstable; urgency=low
 
   * Initial Release.
