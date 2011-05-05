@@ -1,3 +1,13 @@
+libgtk2-webkit-perl (0.08+git20100606-0.sdinetF3) unstable; urgency=low
+
+  * Added new function Gtk2::WebKit::WebView->dirty_set_proxy($proxy_uri)
+    Sets global proxy to use by all Gtk2::WebKit::WebView instances.
+    Needs fully specified proxy url in the form
+    http://username:pass@hostname:port,
+    for example 'http://"":""@localhost:3128'
+
+ -- Sven-Haegar Koch <haegar@sdinet.de>  Thu, 05 May 2011 16:37:12 +0200
+
 libgtk2-webkit-perl (0.08+git20100606-0.sdinetF2) unstable; urgency=low
 
   * Replaced Build-Depends libwebkitgtk-dev with libwebkit-dev

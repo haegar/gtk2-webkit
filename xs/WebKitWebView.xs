@@ -1,5 +1,6 @@
 #include "perl_webkit.h"
 #include <gperl_marshal.h>
+#include <libsoup/soup.h>
 
 STATIC void
 store_sting (gpointer key, gpointer value, gpointer user_data)
@@ -385,3 +386,22 @@ webkit_set_cache_model (class, cache_model)
 WebKitCacheModel
 webkit_get_cache_model (class)
 	C_ARGS:
+
+void
+dirty_set_proxy (class, proxy_url)
+# Set global proxy to use by all Gtk2::WebKit::WebView instances.
+#
+# Needs fully specified proxy url in the form http://username:pass@hostname:port,
+# for example 'http://"":""@localhost:3128'
+		char *proxy_url
+	CODE:
+		{
+			SoupSession* session = webkit_get_default_session();
+			SoupURI *soupUri = soup_uri_new(proxy_url);
+
+			g_object_set(session, SOUP_SESSION_PROXY_URI, soupUri, NULL);
+
+			if (soupUri)
+				soup_uri_free(soupUri);
+		}
+
