@@ -405,3 +405,26 @@ dirty_set_proxy (class, proxy_url)
 				soup_uri_free(soupUri);
 		}
 
+void
+dirty_clear_all_cookies (class)
+	CODE:
+		{
+			SoupSession *session;
+			SoupCookieJar *jar;
+			GSList *all_cookies;
+			GSList *cookie;
+
+			session = webkit_get_default_session();
+			jar = SOUP_COOKIE_JAR(soup_session_get_feature(session, SOUP_TYPE_COOKIE_JAR));
+			if (!jar)
+				return;
+
+			all_cookies = soup_cookie_jar_all_cookies(jar);
+			if (!all_cookies)
+				return;
+
+			for (cookie = all_cookies; cookie; cookie = cookie->next)
+				soup_cookie_jar_delete_cookie(jar, (SoupCookie*)cookie->data);
+
+			soup_cookies_free(all_cookies);
+		}
