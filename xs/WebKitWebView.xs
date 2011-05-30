@@ -1,6 +1,11 @@
+#define LIBSOUP_USE_UNSTABLE_REQUEST_API
+
 #include "perl_webkit.h"
 #include <gperl_marshal.h>
 #include <libsoup/soup.h>
+#include <libsoup/soup-cache.h>
+
+static SoupCache *soup_cache = NULL;
 
 STATIC void
 store_sting (gpointer key, gpointer value, gpointer user_data)
@@ -62,6 +67,63 @@ perl_webkit_web_view_marshall_create_plugin_widget (GClosure *closure,
 	FREETMPS;
 	LEAVE;
 }
+
+STATIC bool
+dirty_set_soup_feature(SoupSession *session, GType feature)
+/* returns true if the feature has been added, false if it was already there */
+{
+	GSList *flist = soup_session_get_features (session, feature);
+	guint feature_is_set = g_slist_length(flist);
+	g_slist_free(flist);
+
+	if (feature_is_set)
+		return false;
+
+	soup_session_add_feature_by_type(session, feature);
+	return true;
+}
+
+STATIC void
+dirty_soup_cache_finish(SoupSession *session)
+{
+	if (soup_cache) {
+		soup_cache_flush(soup_cache);
+		soup_cache_dump(soup_cache);
+		g_object_unref(soup_cache);
+		soup_cache = NULL;
+	}
+}
+
+STATIC void
+dirty_soup_cache_init(SoupSession *session, guint cache_size)
+/* cache_size in mb */
+{
+	char *cache_dir;
+
+	if (soup_cache) {
+		dirty_soup_cache_finish(session);
+	}
+
+	cache_dir = g_build_filename(g_get_user_cache_dir (), g_get_prgname (), NULL);
+	soup_cache = soup_cache_new(cache_dir, SOUP_CACHE_SINGLE_USER);
+	g_free(cache_dir);
+
+	if (!soup_cache)
+		return;
+
+	soup_session_add_feature(session, SOUP_SESSION_FEATURE(soup_cache));
+
+	/* Cache size in Mb: 1024 * 1024 */
+	soup_cache_set_max_size(soup_cache, cache_size << 20);
+
+	soup_cache_load(soup_cache);
+
+	SoupCache *dummy = (SoupCache *)soup_session_get_feature (session, SOUP_TYPE_CACHE);
+	if (!dummy) {
+		croak("FOOOOOOOOO");
+	}
+}
+
 
 MODULE = Gtk2::WebKit::WebView	PACKAGE = Gtk2::WebKit::WebView	PREFIX = webkit_web_view_
 
@@ -396,13 +458,24 @@ dirty_set_proxy (class, proxy_url)
 		char *proxy_url
 	CODE:
 		{
-			SoupSession* session = webkit_get_default_session();
-			SoupURI *soupUri = soup_uri_new(proxy_url);
+			SoupSession *session;
+			SoupURI *soupUri;
 
-			g_object_set(session, SOUP_SESSION_PROXY_URI, soupUri, NULL);
+			session = webkit_get_default_session();
+			if (!session)
+				return;
 
-			if (soupUri)
-				soup_uri_free(soupUri);
+			if (proxy_url) {
+				soupUri = soup_uri_new(proxy_url);
+				g_object_set(session, SOUP_SESSION_PROXY_URI, soupUri, NULL);
+
+				if (soupUri)
+					soup_uri_free(soupUri);
+			} else {
+				soup_session_remove_feature_by_type(
+					session,
+					(GType) SOUP_SESSION_PROXY_URI);
+			}
 		}
 
 void
@@ -415,6 +488,9 @@ dirty_clear_all_cookies (class)
 			GSList *cookie;
 
 			session = webkit_get_default_session();
+			if (!session)
+				return;
+
 			jar = SOUP_COOKIE_JAR(soup_session_get_feature(session, SOUP_TYPE_COOKIE_JAR));
 			if (!jar)
 				return;
@@ -427,4 +503,72 @@ dirty_clear_all_cookies (class)
 				soup_cookie_jar_delete_cookie(jar, (SoupCookie*)cookie->data);
 
 			soup_cookies_free(all_cookies);
+		}
+
+void
+dirty_set_wanted_soup_features(class)
+	CODE:
+		{
+			SoupSession *session;
+
+			session = webkit_get_default_session();
+			if (!session)
+				return;
+
+			dirty_set_soup_feature(session, (GType) WEBKIT_TYPE_SOUP_AUTH_DIALOG);
+			dirty_soup_cache_init(session, 50);
+		}
+
+void
+dirty_soup_cache_set_max_size(class, max_size)
+	guint max_size
+	CODE:
+		{
+			if (!soup_cache)
+				return;
+
+			soup_cache_set_max_size(soup_cache, max_size);
+		}
+
+guint
+dirty_soup_cache_get_max_size(class)
+	CODE:
+		{
+			RETVAL = 0;
+			if (!soup_cache)
+				return;
+
+			RETVAL = soup_cache_get_max_size(soup_cache);
+		}
+	OUTPUT:
+		RETVAL
+
+void
+dirty_soup_cache_flush(class)
+	CODE:
+		{
+			if (!soup_cache)
+				return;
+
+			soup_cache_flush(soup_cache);
+		}
+
+void
+dirty_soup_cache_clear(class)
+	CODE:
+		{
+			if (!soup_cache)
+				return;
+
+			soup_cache_clear(soup_cache);
+		}
+
+void
+dirty_soup_cache_dump(class)
+	CODE:
+		{
+			if (!soup_cache)
+				return;
+
+			soup_cache_dump(soup_cache);
 		}
