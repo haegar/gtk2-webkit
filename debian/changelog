@@ -1,3 +1,9 @@
+libgtk2-webkit-perl (0.09+git20110530-0.sdinetF1) unstable; urgency=low
+
+  * Upstream released version 0.09
+
+ -- Sven-Haegar Koch <haegar@sdinet.de>  Mon, 30 May 2011 14:09:59 +0200
+
 libgtk2-webkit-perl (0.08+git20100606-0.sdinetF6) unstable; urgency=low
 
   * Experimenting with SoupCache feature of libsoup 2.34
